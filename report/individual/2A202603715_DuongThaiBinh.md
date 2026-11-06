@@ -41,26 +41,24 @@
 
 🎯 Đề #1: ML · Đổi ngưỡng quyết định 0.5 → 0.2 và → 0.8 cho mô hình Phần 1. Báo precision/recall/F1 từng ngưỡng. Một ngân hàng sợ chặn nhầm tin OTP thì nên chọn ngưỡng nào? Vì sao?
 - Code:
-# Lấy xác suất spam từ mô hình Phần 1
-X_te = vectorize(texts_te, vocab)
-probs = predict_proba(X_te, w, b)
+    X_te = vectorize(texts_te, vocab)
+    probs = predict_proba(X_te, w, b)
 
-# So sánh 3 ngưỡng
-results = []
+    results = []
 
-for threshold in [0.2, 0.5, 0.8]:
-    y_pred = (probs >= threshold).astype(int)
-    m = metrics(y_te, y_pred)
+    for threshold in [0.2, 0.5, 0.8]:
+        y_pred = (probs >= threshold).astype(int)
+        m = metrics(y_te, y_pred)
 
-    results.append({
-        "Threshold": threshold,
-        "Precision": m["precision"],
-        "Recall": m["recall"],
-        "F1": m["f1"]
-    })
+        results.append({
+            "Threshold": threshold,
+            "Precision": m["precision"],
+            "Recall": m["recall"],
+            "F1": m["f1"]
+        })
+    df = pd.DataFrame(results)
+    print(df.round(3).to_string(index=False))
 
-df = pd.DataFrame(results)
-print(df.round(3).to_string(index=False))
 - Kết quả + giải thích:
     - Khi thử ba ngưỡng quyết định, ngưỡng 0.2 cho kết quả tốt nhất với Precision = 0.874, Recall = 0.907 và F1 = 0.890. So với ngưỡng 0.5 (F1 = 0.856), việc giảm ngưỡng giúp phát hiện thêm nhiều tin spam nhưng cũng tăng nguy cơ chặn nhầm ham. Ngưỡng 0.8 có Precision = 1.000 nhưng Recall chỉ còn 0.617, khiến F1 giảm xuống 0.763. Vì vậy, trong ba ngưỡng thử nghiệm, tôi chọn 0.2 vì có F1 cao nhất và cân bằng Precision - Recall tốt hơn.
     - Ngân hàng nên ưu tiên ngưỡng có Precision cao để tránh chặn nhầm tin OTP hợp lệ (False Positive). Trong kết quả thí nghiệm, cả ngưỡng 0.5 và 0.8 đều đạt Precision = 100%, nhưng ngưỡng 0.5 có Recall cao hơn (0.748 so với 0.617). Vì vậy, nên chọn ngưỡng 0.5 vì vừa không chặn nhầm ham trên tập test, vừa phát hiện được nhiều spam hơn. Khi triển khai thực tế, cần kiểm tra riêng trên dữ liệu OTP và đánh giá tỷ lệ False Positive trước khi quyết định.
